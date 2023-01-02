@@ -4,9 +4,8 @@ all: main test
 	mkdir -p out
 
 main: .outputFolder
-	clang++ -std=c++20 -lstdc++ -lm src/main.cpp -Wall -Wextra -Werror -o out/main
-	./out/main
+	clang++ -std=c++17 -lstdc++ -Iinclude/ -lm src/main.cpp -Wall -Wextra -Werror -o out/main
 
 test: .outputFolder
-	clang++ -std=c++20 -lstdc++ -lm test/test.cpp -Wall -Wextra -Werror -o out/test
+	clang++ -std=c++17 -lstdc++ -Iinclude/ -lm test/test.cpp -Wall -Wextra -Werror -o out/test
 	./out/test
