@@ -16,27 +16,18 @@ using namespace std::placeholders;
 namespace util {
 
 	template<typename DestinationType>
-	auto transformAllIterator = [](const auto& begin, const auto& end, auto fn){
-		DestinationType result;
-		transform(std::execution::par, begin, end, result.begin(), fn);
-		return result;
-	};	
-
-	template<typename DestinationType>
 	auto transformAll = [](const auto& source, auto fn){
-		return transformAllIterator<DestinationType>(source.begin(), source.end(), fn);
+		DestinationType result;
+		result.resize(source.size());
+		transform(std::execution::par, source.begin(), source.end(), result.begin(), fn);
+		return result;
 	};		
 
 	template<typename DestinationType>
-	auto filterIterator = [](const auto& begin, const auto& end, auto fn){
-		DestinationType filteredResult;
-		copy_if(begin, end, std::back_inserter(filteredResult), fn);
-		return filteredResult;
-	};
-
-	template<typename DestinationType>
 	auto filter = [](const auto& source, auto fn){
-		return filterIterator<DestinationType>(source.begin(), source.end(), fn);
+		DestinationType filteredResult;
+		copy_if(source.begin(), source.end(), std::back_inserter(filteredResult), fn);
+		return filteredResult;
 	};
 
 	auto accumulateAll = [](const auto source, auto fn){
@@ -84,7 +75,10 @@ namespace util {
 	};
 
 	auto fileList = [](const auto& filepath, const auto& fileExtension) {
-		return filter<vector<string>>(transformAllIterator<vector<path>>(recursive_directory_iterator(filepath), recursive_directory_iterator(), getPath), bind(isFileWithCorrectExtension, _1, fileExtension));
+		vector<directory_entry> entries;
+		copy(recursive_directory_iterator(filepath), recursive_directory_iterator(), back_inserter(entries)); 
+
+		return filter<vector<string>>(transformAll<vector<path>>(entries, getPath), bind(isFileWithCorrectExtension, _1, fileExtension));
 	};
 
 	auto readFile = [](const auto& filePath) {

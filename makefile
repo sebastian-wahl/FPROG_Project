@@ -3,9 +3,11 @@ all: main test
 .outputFolder:
 	mkdir -p out
 
+FLAGS = -std=c++17 -lstdc++ -Iinclude/ -lm -ltbb
+
 main: .outputFolder
-	clang++ -std=c++17 -lstdc++ -Iinclude/ -lm src/main.cpp -Wall -Wextra -Werror -o out/main
+	clang++ ${FLAGS} src/main.cpp -Wall -Wextra -Werror -o out/main
 
 test: .outputFolder
-	clang++ -std=c++17 -lstdc++ -Iinclude/ -lm test/test.cpp -Wall -Wextra -Werror -o out/test
+	clang++ ${FLAGS} test/test.cpp -Wall -Wextra -Werror -o out/test
 	./out/test
