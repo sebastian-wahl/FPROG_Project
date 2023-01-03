@@ -8,14 +8,14 @@
 using namespace std;
 
 TEST_CASE("split") {
-	string input = "a b c d a a b d c e";
+	string input = "**a b c d a a b d c e**";
 	vector<string> expected = {"a", "b", "c", "d", "a", "a", "b", "d", "c", "e"};
 	
-	CHECK_EQ(expected, util::split(input));
+	CHECK_EQ(expected, util::splitText(input));
 }
 
 TEST_CASE("wordcount") {
-	auto wordList = util::split("a b c d a b a b d b c e");
+	auto wordList = util::splitText("a b c d a b a b d b c e");
 	wordcount::KeyValueList expected = {
 		{"b", 4},
 		{"a", 3},

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <optional>
+#include <regex>
 
 using namespace std;
 
@@ -19,18 +20,18 @@ namespace util {
 		return firstChar.has_value() && firstChar.value() == '.';
 	};
 
-	auto split = [](const string& text){
-		stringstream sstream(text);
-		string tmp;
+	auto split = [](const auto& begin, const auto& end){
+		const regex ws_re("[a-zA-Z0-9ßöäüÖÄÜ]+");
 		vector<string> out;
-
-		while (getline(sstream, tmp, ' ')) {
-			out.push_back(tmp);
-		}
-
+		copy(sregex_token_iterator(begin, end, ws_re, 0),
+				sregex_token_iterator(),
+				back_inserter(out));
 		return out;
 	};
-	
+
+	auto splitText = [](const auto& text){
+		return split(text.begin(), text.end());
+	};	
 }
 
 #endif
