@@ -50,9 +50,7 @@ namespace wordcount {
 	};
 
 	auto reduce = [](const auto& groups){
-		return transformAll<KeyValueList>(groups, [=](const auto& group){
-			return accumulateCount(group);
-		});
+		return transformAll<KeyValueList>(groups, accumulateCount);
 	};
 
 	auto count = [](const auto& wordList){

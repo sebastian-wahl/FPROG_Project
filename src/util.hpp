@@ -7,6 +7,7 @@
 #include <optional>
 #include <regex>
 #include <filesystem>
+#include <execution>
 
 using namespace std;
 using namespace std::filesystem;
@@ -17,7 +18,7 @@ namespace util {
 	template<typename DestinationType>
 	auto transformAllIterator = [](const auto& begin, const auto& end, auto fn){
 		DestinationType result;
-		std::transform(begin, end, std::back_inserter(result), fn);
+		transform(std::execution::par, begin, end, result.begin(), fn);
 		return result;
 	};	
 
