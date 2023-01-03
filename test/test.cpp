@@ -28,3 +28,11 @@ TEST_CASE("wordcount") {
 
 	CHECK_EQ(expected, actual);
 }
+
+TEST_CASE("filelist") {
+	
+	for(string &path : util::fileList("./files", ".txt")) {
+		cout << path << ", ";
+	}
+
+}

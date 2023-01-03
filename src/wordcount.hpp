@@ -6,17 +6,13 @@
 #include <numeric>
 #include <algorithm>
 #include <range/v3/all.hpp>
+#include "util.hpp"
+
+using namespace util;
 
 namespace wordcount {
 
 	using KeyValueList = std::vector<std::pair<std::string, int>>;
-
-	template<typename DestinationType>
-	auto transformAll = [](const auto& source, auto fn){
-		DestinationType result;
-		std::transform(source.begin(), source.end(), std::back_inserter(result), fn);
-		return result;
-	};
 
 	auto map = [](const auto& wordList){
 		return transformAll<KeyValueList>(wordList, [](const auto& word){
@@ -50,7 +46,7 @@ namespace wordcount {
 		};
 		auto copy = source | ranges::to<std::vector>();
 
-		return std::accumulate(copy.begin(), copy.end(), typename decltype(copy)::value_type(), sumCount);
+		return accumulateAll(copy, sumCount);
 	};
 
 	auto reduce = [](const auto& groups){
@@ -60,7 +56,11 @@ namespace wordcount {
 	};
 
 	auto count = [](const auto& wordList){
-		return sortByCount(reduce(group(sortByWord(map(wordList)))));
+		return reduce(group(sortByWord(map(wordList))));
+	};
+
+	auto mergeLists = [](const auto& wordLists) {
+		return sortByCount(reduce(group(sortByWord(concatenateAll(wordLists)))));
 	};
 }
 
