@@ -53,18 +53,14 @@ namespace util {
 		return firstChar.has_value() && firstChar.value() == '.';
 	};
 
-	auto split = [](const auto& begin, const auto& end){
-		const regex ws_re("[a-zA-Z0-9ßöäüÖÄÜ]+");
+	auto split = [](const string& input){
+		const regex rgx("[a-zA-Z0-9ßöäüÖÄÜ]+");
 		vector<string> out;
-		copy(sregex_token_iterator(begin, end, ws_re, 0),
+		copy(sregex_token_iterator(input.begin(), input.end(), rgx, 0),
 				sregex_token_iterator(),
 				back_inserter(out));
 		return out;
 	};
-
-	auto splitText = [](const string& text){
-		return split(text.begin(), text.end());
-	};	
 
 	auto getPath = [](const auto& dirEntry) {
 		return dirEntry.path();
@@ -74,22 +70,23 @@ namespace util {
 		return !filesystem::is_directory(path) && is_regular_file(path) && path.extension() == fileExtension;
 	};
 
-	auto fileList = [](const auto& filepath, const auto& fileExtension) {
+	auto listDirectoryEntries = [](const auto& dirpath){
 		vector<directory_entry> entries;
-		copy(recursive_directory_iterator(filepath), recursive_directory_iterator(), back_inserter(entries)); 
+		copy(recursive_directory_iterator(dirpath), recursive_directory_iterator(), back_inserter(entries)); 
 
-		return filter<vector<string>>(transformAll<vector<path>>(entries, getPath), bind(isFileWithCorrectExtension, _1, fileExtension));
+		return entries;
+	};
+
+	auto fileList = [](const auto& dirpath, const auto& fileExtension) {
+		return filter<vector<string>>(transformAll<vector<path>>(listDirectoryEntries(dirpath), getPath), bind(isFileWithCorrectExtension, _1, fileExtension));
 	};
 
 	auto readFile = [](const auto& filePath) {
 		ifstream file(filePath);
+		string str(istreambuf_iterator<char>(file), (istreambuf_iterator<char>()));
+		file.close();			
 
-		ostringstream sout;
-		copy(istreambuf_iterator<char>(file),
-			istreambuf_iterator<char>(),
-			ostreambuf_iterator<char>(sout));
-		file.close();
-		return sout.str();
+		return str;
 	};
 }
 

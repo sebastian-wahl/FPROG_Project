@@ -11,11 +11,11 @@ TEST_CASE("split") {
 	string input = "**a b c d a a b d c e**";
 	vector<string> expected = {"a", "b", "c", "d", "a", "a", "b", "d", "c", "e"};
 	
-	CHECK_EQ(expected, util::splitText(input));
+	CHECK_EQ(expected, util::split(input));
 }
 
 TEST_CASE("wordcount") {
-	auto wordList = util::splitText("a b c d a b a b d b c e");
+	auto wordList = util::split("a b c d a b a b d b c e");
 	wordcount::KeyValueList expected = {
 		{"b", 4},
 		{"a", 3},
@@ -24,15 +24,7 @@ TEST_CASE("wordcount") {
 		{"e", 1}
 	};
 
-	wordcount::KeyValueList actual = wordcount::count(wordList);
+	wordcount::KeyValueList actual = wordcount::sortByCount(wordcount::count(wordList));
 
 	CHECK_EQ(expected, actual);
-}
-
-TEST_CASE("filelist") {
-	
-	for(string &path : util::fileList("./files", ".txt")) {
-		cout << path << ", ";
-	}
-
 }
