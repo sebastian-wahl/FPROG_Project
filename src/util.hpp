@@ -40,13 +40,9 @@ namespace util {
 		return accumulateAll(collection, concatenate);
 	};
 
-	auto findFirst = [](const auto& collection){
-		return collection.size() > 0 ? make_optional(collection[0]) : nullopt;
-	};
-
 	auto isFileExtension = [](const string& fileextension){
-		auto firstChar = findFirst(fileextension);
-		return firstChar.has_value() && firstChar.value() == '.';
+		const regex rgx("^\\.[a-z]+$");
+		return regex_match(fileextension, rgx);
 	};
 
 	auto split = [](const string& input){
