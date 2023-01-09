@@ -50,7 +50,7 @@ namespace util {
 	};
 
 	auto split = [](const string& input){
-		const regex rgx("[a-zA-Z0-9ßöäüÖÄÜ]+");
+		const regex rgx("[a-zA-Z0-9ßöäüÖÄÜ\\-]+");
 		vector<string> out;
 		copy(sregex_token_iterator(input.begin(), input.end(), rgx, 0),
 				sregex_token_iterator(),
