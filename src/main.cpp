@@ -61,9 +61,13 @@ int main(const int argc, char* const argv[]) {
        return EINVAL;
     }
     
+    // accumulate equal words and their count
     wordcount::KeyValueList wordCount = wordcount::mergeLists(
+        // count words
         util::transformAll<vector<wordcount::KeyValueList>>(
+            // split words
             util::transformAll<vector<vector<string>>>(
+                // open file and read all chars
                 util::transformAll<vector<string>>(fileList(filepath, fileextension), readFile),
             util::split),
         wordcount::count)

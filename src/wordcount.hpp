@@ -33,21 +33,23 @@ namespace wordcount {
 	auto sortByCount = bind(sortBy, std::placeholders::_1, descendingCount);
 
 	auto group = [](const auto& mappedResult){
-		auto equalWord = [](const auto& a, const auto& b) {
-			return ranges::equal(a.first, b.first);
-		};
+        auto equalWord = [](const auto& a, const auto& b) {
+            return a.first == b.first;
+        };
 
-		return mappedResult | ranges::views::chunk_by(equalWord) | ranges::to<std::vector>();
-	};
-
+        return mappedResult 
+            | ranges::views::chunk_by(equalWord) 
+            | ranges::views::transform([](const auto& subrange){return ranges::to<std::vector>(subrange);})
+            | ranges::to<std::vector>();
+    };
+	
 	auto accumulateCount = [](const auto& source){
-		auto sumCount = [](const auto& a, const auto& b){
-			return std::make_pair(b.first, a.second + b.second);
-		};
-		auto copy = source | ranges::to<std::vector>();
+        auto sumCount = [](const auto& a, const auto& b){
+            return std::make_pair(b.first, a.second + b.second);
+        };
 
-		return accumulateAll(copy, sumCount);
-	};
+        return accumulateAll(source, sumCount);
+    };
 
 	auto reduce = [](const auto& groups){
 		return transformAll<KeyValueList>(groups, accumulateCount);
