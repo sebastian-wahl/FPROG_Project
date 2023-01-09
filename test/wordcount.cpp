@@ -8,6 +8,83 @@
 #include "../src/util.hpp"
 
 using namespace std;
+using namespace ranges;
+
+using stringList = vector<string>;
+
+// generators
+auto genRandomString = [](int len) {
+    vector<char> chars = views::concat(views::ints(48, 58), views::ints(65, 91), views::ints(97, 123), views::ints(45, 46)) | views::sample(len) | views::transform([](int asciiCode){ return char(asciiCode); }) | to<vector>();
+	string aString(chars.begin(), chars.end());
+	return aString;
+};
+
+auto genRandomStringVector = [](int min, int wordCount) {		
+	return views::ints(min, min+wordCount) | views::transform(genRandomString) | to<vector>();
+};
+
+auto nWordStringGenerator = [](const int wordCount) {
+	return views::ints(0, 10) | views::transform(bind(genRandomStringVector, std::placeholders::_1, wordCount)) | to<vector>();
+};
+auto oneWordStringGenerator = bind(nWordStringGenerator, 1);
+
+auto doubleStringSingleListGenerator = []() {
+	auto generated = oneWordStringGenerator();
+	return util::transformAll<vector<stringList>>(generated, [](auto const& list) {
+		return util::concatenate(list, list);
+	});
+};
+auto doubleStringDoubleListGenerator = []() {
+	auto generated = oneWordStringGenerator();
+	return util::transformAll<vector<vector<stringList>>>(generated, [](auto const& list) {
+		return vector<stringList>({list, list});
+	});
+};
+
+// properties
+auto prop_count_list_with_one_word = [](const auto& wordList) {
+	auto counted = wordcount::count(wordList);
+	CHECK_EQ(wordList.size(), 1);
+	CHECK_EQ(counted.size(), 1);
+	auto first = counted[0];
+	return first.second == 1;
+};
+auto prop_count_list_with_two_words = [](const auto& wordList) {
+	auto counted = wordcount::count(wordList);
+	CHECK_EQ(wordList.size(), 2);
+	CHECK_EQ(counted.size(), 1);
+	auto first = counted[0];
+	return first.second == 2;
+};
+auto prop_mergeLists_with_two_words = [](const auto& wordList) {
+	auto counted = wordcount::mergeLists(util::transformAll<vector<wordcount::KeyValueList>>(wordList, wordcount::count));
+	CHECK_EQ(wordList.size(), 2);
+	CHECK_EQ(counted.size(), 1);
+	auto first = counted[0];
+	return first.second == 2;
+};
+
+auto all_of_collection = [](const auto& collection, auto lambda){
+	return std::all_of(collection.begin(), collection.end(), lambda);
+};
+
+
+auto check_property = [](const auto& generator, const auto& property){
+	auto values = generator();
+	CHECK(all_of_collection(values, property));
+};
+
+TEST_CASE("wordcountOneWordString") {
+	check_property(oneWordStringGenerator, prop_count_list_with_one_word);
+}
+
+TEST_CASE("wordcountTwoWordsString") {
+	check_property(doubleStringSingleListGenerator, prop_count_list_with_two_words);
+}
+
+TEST_CASE("wordcountTwoWordsString") {
+	check_property(doubleStringDoubleListGenerator, prop_mergeLists_with_two_words);
+}
 
 TEST_CASE("wordcount") {
 	auto wordList = util::split("a b c d a b a b d b c e");
@@ -25,7 +102,7 @@ TEST_CASE("wordcount") {
 }
 
 TEST_CASE("map") {
-	vector<string> wordList = {"a", "b", "c", "d", "a", "b"};
+	stringList wordList = {"a", "b", "c", "d", "a", "b"};
 	wordcount::KeyValueList expected = {
 		{"a", 1},
 		{"b", 1},
@@ -160,7 +237,7 @@ TEST_CASE("reduce") {
 }
 
 TEST_CASE("count") {
-	vector<string> toGroup = {"denny", "alfred", "berta", "denny", "klaus", "alfred"};
+	stringList toGroup = {"denny", "alfred", "berta", "denny", "klaus", "alfred"};
 
 	wordcount::KeyValueList expected = {
 		{"alfred", 2},
