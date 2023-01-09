@@ -2,16 +2,12 @@
 #define UTIL_H
 
 #include <string>
-#include <sstream>
 #include <vector>
 #include <optional>
 #include <regex>
-#include <filesystem>
 #include <execution>
 
 using namespace std;
-using namespace std::filesystem;
-using namespace std::placeholders;
 
 namespace util {
 
@@ -60,33 +56,6 @@ namespace util {
 				sregex_token_iterator(),
 				back_inserter(out));
 		return out;
-	};
-
-	auto getPath = [](const auto& dirEntry) {
-		return dirEntry.path();
-	};
-
-	auto isFileWithCorrectExtension = [](const auto& path, const auto& fileExtension) {
-		return !filesystem::is_directory(path) && is_regular_file(path) && path.extension() == fileExtension;
-	};
-
-	auto listDirectoryEntries = [](const auto& dirpath){
-		vector<directory_entry> entries;
-		copy(recursive_directory_iterator(dirpath), recursive_directory_iterator(), back_inserter(entries)); 
-
-		return entries;
-	};
-
-	auto fileList = [](const auto& dirpath, const auto& fileExtension) {
-		return filter<vector<string>>(transformAll<vector<path>>(listDirectoryEntries(dirpath), getPath), bind(isFileWithCorrectExtension, _1, fileExtension));
-	};
-
-	auto readFile = [](const auto& filePath) {
-		ifstream file(filePath);
-		string str(istreambuf_iterator<char>(file), (istreambuf_iterator<char>()));
-		file.close();			
-
-		return str;
 	};
 }
 

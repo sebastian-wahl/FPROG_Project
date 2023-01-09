@@ -2,18 +2,47 @@
 #include <iostream>
 #include <fstream>
 #include <optional>
-#include <chrono>
+#include <sstream>
 
 #include "wordcount.hpp"
 #include "util.hpp"
 
 using namespace std;
+using namespace std::filesystem;
+using namespace std::placeholders;
 
 void printList(const wordcount::KeyValueList& wordList, ofstream& outFile) {
 	for (auto& pair : wordList) {
 		outFile << pair.first << " -> " << pair.second << endl;
 	}
 }
+
+auto getPath = [](const auto& dirEntry) {
+    return dirEntry.path();
+};
+
+auto isFileWithCorrectExtension = [](const auto& path, const auto& fileExtension) {
+    return !filesystem::is_directory(path) && is_regular_file(path) && path.extension() == fileExtension;
+};
+
+auto listDirectoryEntries = [](const auto& dirpath){
+    vector<directory_entry> entries;
+    copy(recursive_directory_iterator(dirpath), recursive_directory_iterator(), back_inserter(entries)); 
+
+    return entries;
+};
+
+auto fileList = [](const auto& dirpath, const auto& fileExtension) {
+    return filter<vector<string>>(transformAll<vector<path>>(listDirectoryEntries(dirpath), getPath), bind(isFileWithCorrectExtension, _1, fileExtension));
+};
+
+auto readFile = [](const auto& filePath) {
+    ifstream file(filePath);
+    string str(istreambuf_iterator<char>(file), (istreambuf_iterator<char>()));
+    file.close();			
+
+    return str;
+};
 
 int main(const int argc, char* const argv[]) {
 	
@@ -35,11 +64,10 @@ int main(const int argc, char* const argv[]) {
     wordcount::KeyValueList wordCount = wordcount::mergeLists(
         util::transformAll<vector<wordcount::KeyValueList>>(
             util::transformAll<vector<vector<string>>>(
-                util::transformAll<vector<string>>(util::fileList(filepath, fileextension), util::readFile),
+                util::transformAll<vector<string>>(fileList(filepath, fileextension), readFile),
             util::split),
         wordcount::count)
     );
-
 
     ofstream outFile("./out.txt");
 
